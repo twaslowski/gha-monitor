@@ -5,14 +5,14 @@ import RepoForm from "@/components/RepoForm";
 import WorkflowSelect from "@/components/WorkflowSelect";
 import WorkflowRunsTable from "@/components/WorkflowRunsTable";
 import { WorkflowRun } from "@/types/workflowRun";
-import {Workflow} from "@/types/workflow";
-
+import { Workflow } from "@/types/workflow";
+import { useSession } from "next-auth/react";
 
 export default function Home() {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<WorkflowRun[] | null>(null);
-  const [token, setToken] = useState("");
   const [workflows, setWorkflows] = useState<Workflow[] | null>(null);
   const [selectedWorkflow, setSelectedWorkflow] = useState<string>("");
   const [repo, setRepo] = useState<string>("");
@@ -21,13 +21,15 @@ export default function Home() {
   async function fetchWorkflows(
     owner: string,
     repoName: string,
-    tokenInput: string,
     timeframe: string,
   ) {
     const headers: Record<string, string> = {
       Accept: "application/vnd.github+json",
     };
-    if (tokenInput) headers["Authorization"] = `Bearer ${tokenInput}`;
+    if (session) {
+      headers.Authorization = `Bearer ${session.accessToken}`;
+    }
+
     let url = `https://api.github.com/repos/${owner}/${repoName}/actions/workflows`;
 
     // Add created filter if timeframe is specified
@@ -48,18 +50,15 @@ export default function Home() {
   async function handleSubmit({
     repo,
     timeframe,
-    token: tokenInput,
   }: {
     repo: string;
     timeframe: string;
-    token: string;
   }) {
     setError(null);
     setResults(null);
     setWorkflows(null);
     setSelectedWorkflow("");
     setLoading(true);
-    setToken(tokenInput);
     setRepo(repo);
     setTimeframe(timeframe);
 
@@ -70,7 +69,7 @@ export default function Home() {
     }
     const [owner, repoName] = repo.split("/");
     try {
-      await fetchWorkflows(owner, repoName, tokenInput, timeframe);
+      await fetchWorkflows(owner, repoName, timeframe);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -111,12 +110,12 @@ export default function Home() {
         const headers: Record<string, string> = {
           Accept: "application/vnd.github+json",
         };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
         const res = await fetch(url, { headers });
         if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
         const data: { workflow_runs?: WorkflowRun[] } = await res.json();
         runs = runs.concat(data.workflow_runs || []);
-        hasMore = data.workflow_runs !== undefined && data.workflow_runs.length === 100;
+        hasMore =
+          data.workflow_runs !== undefined && data.workflow_runs.length === 100;
         page++;
       }
       setResults(runs);
@@ -132,20 +131,36 @@ export default function Home() {
   }
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <RepoForm onSubmit={handleSubmit} />
-        {loading && <div className="mt-4 text-blue-600">Loading...</div>}
-        {error && <div className="mt-4 text-red-600">{error}</div>}
-        {workflows && (
-          <WorkflowSelect
-            workflows={workflows}
-            selectedWorkflow={selectedWorkflow}
-            onChange={handleWorkflowSelect}
-          />
-        )}
-        {results && <WorkflowRunsTable results={results} />}
-      </main>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col items-center gap-8">
+          <h1 className="text-3xl font-bold text-center">
+            GitHub Workflow Monitor
+          </h1>
+
+          <RepoForm onSubmit={handleSubmit} />
+
+          {error && (
+            <div className="text-red-600 bg-red-50 p-4 rounded-md border border-red-200">
+              {error}
+            </div>
+          )}
+
+          {loading && <div className="text-blue-600">Loading...</div>}
+
+          {workflows && workflows.length > 0 && (
+            <WorkflowSelect
+              workflows={workflows}
+              onChange={handleWorkflowSelect}
+              selectedWorkflow={selectedWorkflow}
+            />
+          )}
+
+          {results && results.length > 0 && (
+            <WorkflowRunsTable results={results} />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
