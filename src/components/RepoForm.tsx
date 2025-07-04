@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSession } from "next-auth/react";
-import AuthButton from "./AuthButton";
+import AuthButton from "@/components/AuthButton";
 
 type FormValues = {
   repo: string;

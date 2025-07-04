@@ -25,6 +25,12 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      graphql-request:
+        specifier: ^7.2.0
+        version: 7.2.0(graphql@16.11.0)
       lucide-react:
         specifier: ^0.525.0
         version: 0.525.0(react@19.1.0)
@@ -436,6 +442,14 @@ packages:
       {
         integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==,
       }
+
+  "@graphql-typed-document-node/core@3.2.0":
+    resolution:
+      {
+        integrity: sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==,
+      }
+    peerDependencies:
+      graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
   "@hookform/resolvers@5.1.1":
     resolution:
@@ -2215,6 +2229,12 @@ packages:
       }
     engines: { node: ">= 0.4" }
 
+  date-fns@4.1.0:
+    resolution:
+      {
+        integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==,
+      }
+
   debug@3.2.7:
     resolution:
       {
@@ -2910,6 +2930,14 @@ packages:
       {
         integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==,
       }
+
+  graphql-request@7.2.0:
+    resolution:
+      {
+        integrity: sha512-0GR7eQHBFYz372u9lxS16cOtEekFlZYB2qOyq8wDvzRmdRSJ0mgUVX1tzNcIzk3G+4NY+mGtSz411wZdeDF/+A==,
+      }
+    peerDependencies:
+      graphql: 14 - 16
 
   graphql@16.11.0:
     resolution:
@@ -5436,6 +5464,10 @@ snapshots:
 
   "@floating-ui/utils@0.2.10": {}
 
+  "@graphql-typed-document-node/core@3.2.0(graphql@16.11.0)":
+    dependencies:
+      graphql: 16.11.0
+
   "@hookform/resolvers@5.1.1(react-hook-form@7.59.0(react@19.1.0))":
     dependencies:
       "@standard-schema/utils": 0.3.0
@@ -6477,6 +6509,8 @@ snapshots:
       es-errors: 1.3.0
       is-data-view: 1.0.2
 
+  date-fns@4.1.0: {}
+
   debug@3.2.7:
     dependencies:
       ms: 2.1.3
@@ -7059,6 +7093,11 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   graphemer@1.4.0: {}
+
+  graphql-request@7.2.0(graphql@16.11.0):
+    dependencies:
+      "@graphql-typed-document-node/core": 3.2.0(graphql@16.11.0)
+      graphql: 16.11.0
 
   graphql@16.11.0: {}
 
