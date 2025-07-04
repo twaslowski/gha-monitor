@@ -1,39 +1,48 @@
 import React, { useEffect, useState } from "react";
 import { Workflow } from "@/types/workflow";
-import { Card } from "@/components/ui/card";
-import { WorkflowRun } from "@/types/workflowRun";
-import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { WorkflowRun, WorkflowRunResponse } from "@/types/workflowRun";
 import {
   formatDistanceToNow,
   formatDuration,
   intervalToDuration,
 } from "date-fns";
+import { useApi } from "@/hooks/use-api";
+import { ControlBar } from "@/components/ControlBar";
 
 interface WorkflowTileProps {
   workflow: Workflow;
 }
 
 const WorkflowTile: React.FC<WorkflowTileProps> = ({ workflow }) => {
+  const { isLoading, error, request } = useApi();
   const [lastRun, setLastRun] = useState<WorkflowRun | null>(null);
 
   useEffect(() => {
     const fetchLastRun = async () => {
       try {
-        const response = await fetch(`${workflow.url}/runs?per_page=1`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch the last workflow run");
-        }
-        const data = await response.json();
-        console.log(data);
-        setLastRun(data.workflow_runs[0] || null);
+        const response = await request<WorkflowRunResponse>(
+          `${workflow.url}/runs?per_page=1`,
+        );
+        setLastRun(response.workflow_runs[0] || null);
       } catch (error) {
         console.error(error);
       }
     };
 
     void fetchLastRun();
-  }, [workflow.url]);
+  }, [workflow.url, request]);
+
+  const refresh = async () => {
+    try {
+      const response = await request<WorkflowRunResponse>(
+        `${workflow.url}/runs?per_page=1`,
+      );
+      setLastRun(response.workflow_runs[0] || null);
+    } catch (error: unknown) {
+      console.error(error);
+    }
+  };
 
   const getStatusClass = () => {
     if (!lastRun) return "bg-gray-100";
@@ -61,30 +70,40 @@ const WorkflowTile: React.FC<WorkflowTileProps> = ({ workflow }) => {
 
   return (
     <Card
-      className={`relative flex flex-col text-center items-center border w-64 h-32 gap-1 ${getStatusClass()}`}
+      className={`relative flex flex-col text-center gap-0 py-0 w-64 h-40 ${getStatusClass()}`}
     >
-      <Link
-        href={lastRun === null ? workflow.html_url : lastRun!.html_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-gray-800 hover:text-black"
-        aria-label="View Workflow"
-      >
-        <ExternalLink className="absolute top-2 right-2 w-5 h-5 cursor-pointer" />
-      </Link>
-      <h3 className="text-lg font-bold leading-tight">{workflow.name}</h3>
-      {lastRun ? (
-        <>
-          <p className="text-sm leading-tight">
-            {formatDistanceToNow(new Date(lastRun.created_at), {
-              addSuffix: true,
-            })}
-          </p>
-          <p className="text-sm leading-tight">Duration: {getDuration()}</p>
-        </>
-      ) : (
-        <p className="text-sm">Failed to fetch last workflow run.</p>
-      )}
+      <CardHeader className="">
+        <ControlBar
+          onRefresh={refresh}
+          workflowUrl={lastRun === null ? workflow.html_url : lastRun!.html_url}
+        />
+      </CardHeader>
+      <CardContent className="flex flex-col items-center justify-center flex-1">
+        {!isLoading && !error && (
+          <>
+            <h3 className="text-lg font-bold leading-tight">{workflow.name}</h3>
+            {lastRun ? (
+              <>
+                <p className="text-sm leading-tight">
+                  {formatDistanceToNow(new Date(lastRun.created_at), {
+                    addSuffix: true,
+                  })}
+                </p>
+                <p className="text-sm leading-tight">
+                  {lastRun.status} ({lastRun.conclusion || "N/A"})
+                </p>
+                <p className="text-sm leading-tight">
+                  Duration: {getDuration()}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm">No runs available</p>
+            )}
+          </>
+        )}
+        {isLoading && <p className="text-sm text-blue-600">Loading...</p>}
+        {error && <p className="text-sm text-red-600">{error.message}</p>}
+      </CardContent>
     </Card>
   );
 };

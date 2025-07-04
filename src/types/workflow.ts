@@ -1,5 +1,10 @@
 import { WorkflowRun } from "@/types/workflowRun";
 
+export type WorkflowResponse = {
+  total_count: number;
+  workflows: Workflow[];
+};
+
 export type Workflow = {
   id: string;
   name: string;

@@ -1,3 +1,8 @@
+export type WorkflowRunResponse = {
+  total_count: number;
+  workflow_runs: WorkflowRun[];
+};
+
 export type WorkflowRun = {
   id: string;
   status: string;

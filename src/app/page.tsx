@@ -1,43 +1,25 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import RepoForm from "@/components/RepoForm";
-import WorkflowRunsTable from "@/components/WorkflowRunsTable";
-import { WorkflowRun } from "@/types/workflowRun";
-import { Workflow } from "@/types/workflow";
-import { fetchWorkflows } from "@/lib/workflow";
 import WorkflowTile from "@/components/WorkflowTile";
+import { useApi } from "@/hooks/use-api";
+import { Workflow, WorkflowResponse } from "@/types/workflow";
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [results, setResults] = useState<WorkflowRun[] | null>(null);
-  const [workflows, setWorkflows] = useState<Workflow[] | null>(null);
+  const { error, isLoading, request } = useApi();
+  const [workflows, setWorkflows] = React.useState<Workflow[]>([]);
 
   async function handleSubmit({ repo }: { repo: string }) {
-    setError(null);
-    setResults(null);
-    setWorkflows(null);
-    setLoading(true);
-
     if (!repo.includes("/")) {
-      setError("Repository must be in the format username/repository");
-      setLoading(false);
+      alert("Please enter a valid repository in the format 'owner/repo'.");
       return;
     }
+
     const [owner, repoName] = repo.split("/");
-    try {
-      const workflows = await fetchWorkflows(owner, repoName);
-      setWorkflows(workflows);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to fetch workflows");
-      }
-    } finally {
-      setLoading(false);
-    }
+    const url = `https://api.github.com/repos/${owner}/${repoName}/actions/workflows`;
+    const response = await request<WorkflowResponse>(url);
+    setWorkflows(response.workflows);
   }
 
   return (
@@ -52,23 +34,18 @@ export default function Home() {
 
           {error && (
             <div className="text-red-600 bg-red-50 p-4 rounded-md border border-red-200">
-              {error}
+              {error.message}
             </div>
           )}
 
-          {loading && <div className="text-blue-600">Loading...</div>}
+          {isLoading && <div className="text-blue-600">Loading...</div>}
 
           <div className="flex flex-wrap gap-4 justify-center w-full">
             {workflows &&
-              workflows.length > 0 &&
               workflows.map((workflow) => (
                 <WorkflowTile key={workflow.id} workflow={workflow} />
               ))}
           </div>
-
-          {results && results.length > 0 && (
-            <WorkflowRunsTable results={results} />
-          )}
         </div>
       </div>
     </div>

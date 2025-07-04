@@ -10,13 +10,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSession } from "next-auth/react";
 import AuthButton from "@/components/AuthButton";
@@ -35,7 +28,6 @@ export default function RepoForm({ onSubmit }: RepoFormProps) {
   const form = useForm<FormValues>({
     defaultValues: {
       repo: "",
-      timeframe: "7d",
     },
   });
 
@@ -75,31 +67,6 @@ export default function RepoForm({ onSubmit }: RepoFormProps) {
                         placeholder="twaslowski/gha-monitor"
                         {...field}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="timeframe"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Timeframe</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        defaultValue="7d"
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select timeframe" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="7d">Last 7 days</SelectItem>
-                          <SelectItem value="30d">Last 30 days</SelectItem>
-                        </SelectContent>
-                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
